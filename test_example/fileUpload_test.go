@@ -1,7 +1,7 @@
 package test_example
 
 import (
-	"BaiduPanApi"
+	"github.com/RandomEstimate/BaiduPanApi"
 	"testing"
 )
 

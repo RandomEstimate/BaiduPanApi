@@ -1,8 +1,8 @@
 package test_example
 
 import (
-	"BaiduPanApi"
 	"fmt"
+	"github.com/RandomEstimate/BaiduPanApi"
 	"path/filepath"
 	"testing"
 )
