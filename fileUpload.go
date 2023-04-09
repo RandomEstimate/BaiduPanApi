@@ -68,9 +68,15 @@ func (f *FileUploader) baiduPCSPreCreate(checksums FileChecksums) (string, strin
 	formData.Add("size", strconv.FormatInt(checksums.totalSize, 10))
 	formData.Add("block_list", fmt.Sprintf(`["%s"]`, strings.Join(checksums.checksums, `","`)))
 	formData.Add("isdir", "0")
+	formData.Add("rtype", "3")
 	formData.Add("autoinit", "1")
 	formData.Add("local_ctime", strconv.FormatInt(fileInfo.ModTime().Unix(), 10))
 	formData.Add("local_mtime", strconv.FormatInt(fileInfo.ModTime().Unix(), 10))
+	if len(checksums.checksums) > 1 {
+		formData.Add("content-md5", checksums.contentMd5)
+		formData.Add("slice-md5", checksums.sliceMd5)
+	}
+
 	data := formData.Encode()
 
 	createReq, err := http.NewRequest(http.MethodPost, fmt.Sprintf(fileUploadUrlPreCreate+"&access_token=%s", f.accessKey), strings.NewReader(data))
@@ -143,7 +149,6 @@ func (f *FileUploader) baiduPCSSuperFile2(uploadID string, checksums FileChecksu
 		if err != nil {
 			return err
 		}
-
 		body := new(bytes.Buffer)
 		writer := multipart.NewWriter(body)
 
@@ -159,18 +164,25 @@ func (f *FileUploader) baiduPCSSuperFile2(uploadID string, checksums FileChecksu
 			return err
 		}
 
-		req, err := http.NewRequest("POST", fileUploadUrlSuperFile2, body)
+		formData := url.Values{}
+		formData.Add("access_token", f.accessKey)
+		formData.Add("type", "tmpfile")
+		formData.Add("path", f.uploadFilePath)
+		formData.Add("uploadid", uploadID)
+		formData.Add("partseq", strconv.Itoa(partSeq))
+
+		req, err := http.NewRequest("POST", fileUploadUrlSuperFile2+"&"+formData.Encode(), body)
 		if err != nil {
 			return err
 		}
 
-		queryParams := req.URL.Query()
-		queryParams.Add("access_token", f.accessKey)
-		queryParams.Add("type", "tmpfile")
-		queryParams.Add("path", f.uploadFilePath)
-		queryParams.Add("uploadid", uploadID)
-		queryParams.Add("partseq", strconv.Itoa(partSeq))
-		req.URL.RawQuery = queryParams.Encode()
+		//queryParams := req.URL.Query()
+		//queryParams.Add("access_token", f.accessKey)
+		//queryParams.Add("type", "tmpfile")
+		//queryParams.Add("path", f.uploadFilePath)
+		//queryParams.Add("uploadid", uploadID)
+		//queryParams.Add("partseq", strconv.Itoa(partSeq))
+		//req.URL.RawQuery = queryParams.Encode()
 
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("Content-Length", strconv.Itoa(body.Len()))
@@ -222,7 +234,7 @@ func (f *FileUploader) baiduPCSCreate(uploadId string, checksums FileChecksums) 
 	formData.Add("path", f.uploadFilePath)
 	formData.Add("size", strconv.FormatInt(int64(checksums.totalSize), 10))
 	formData.Add("isdir", "0")
-	formData.Add("uploadId", uploadId)
+	formData.Add("uploadid", uploadId)
 	formData.Add("mode", "1")
 	formData.Add("rtype", "3")
 	formData.Add("block_list", fmt.Sprintf(`["%s"]`, strings.Join(checksums.checksums, `","`)))

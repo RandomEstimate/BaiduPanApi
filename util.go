@@ -15,8 +15,10 @@ type chunkInfo struct {
 }
 
 type FileChecksums struct {
-	totalSize int64
-	checksums []string
+	totalSize  int64
+	checksums  []string
+	contentMd5 string
+	sliceMd5   string
 }
 
 // VerifyFileExists 检查文件是否存在
@@ -40,6 +42,20 @@ func ChecksumFile(filepath string) (FileChecksums, error) {
 
 	fileInfo, err := os.Stat(filepath)
 	if err != nil {
+		return FileChecksums{}, err
+	}
+
+	// 计算整个文件的MD5
+	fullMd5, err := calcFileMd5(filepath)
+	if err != nil {
+		fmt.Println("Error calculating full file MD5:", err)
+		return FileChecksums{}, err
+	}
+
+	// 计算效验文件MD5
+	headMd5, err := calcHead256KbMd5(filepath)
+	if err != nil {
+		fmt.Println("Error calculating head 256KB MD5:", err)
 		return FileChecksums{}, err
 	}
 
@@ -67,5 +83,38 @@ func ChecksumFile(filepath string) (FileChecksums, error) {
 			return FileChecksums{}, err
 		}
 	}
-	return FileChecksums{totalSize: fileInfo.Size(), checksums: checksums}, nil
+	return FileChecksums{totalSize: fileInfo.Size(), checksums: checksums, contentMd5: fullMd5, sliceMd5: headMd5}, nil
+}
+
+// 计算文件的MD5
+func calcFileMd5(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
+// 计算文件前256KB的MD5
+func calcHead256KbMd5(filePath string) (string, error) {
+	const size = 256 * 1024 // 256KB
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.CopyN(hash, file, size); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
