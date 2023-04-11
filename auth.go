@@ -53,7 +53,7 @@ func (c *OAuthClient) WithCookie(cookie string) *OAuthClient {
 
 // GetAccessToken 获取 access_token 方法
 func (c *OAuthClient) GetAccessToken() (string, error) {
-	reqUrl := "http://openapi.baidu.com/oauth/2.0/authorize?"
+	reqUrl := "https://openapi.baidu.com/oauth/2.0/authorize?"
 	params := url.Values{}
 	params.Add("response_type", c.responseType)
 	params.Add("client_id", c.clientId)
