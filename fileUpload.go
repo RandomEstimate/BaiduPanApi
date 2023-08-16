@@ -25,7 +25,19 @@ type FileUploader struct {
 	accessKey      string
 	filePath       string
 	uploadFilePath string
+	rtype          Rtype
 }
+
+type Rtype int
+
+// 文件命名策略。
+//1 表示当path冲突时，进行重命名
+//2 表示当path冲突且block_list不同时，进行重命名
+//3 当云端存在同名文件时，对该文件进行覆盖
+
+const Rtype1 Rtype = 1
+const Rtype2 Rtype = 2
+const Rtype3 Rtype = 3
 
 func NewFileUploader() *FileUploader {
 	return &FileUploader{}
@@ -43,6 +55,11 @@ func (f *FileUploader) WithFilePath(filePath string) *FileUploader {
 
 func (f *FileUploader) WithUploadFilePath(uploadFilePath string) *FileUploader {
 	f.uploadFilePath = uploadFilePath
+	return f
+}
+
+func (f *FileUploader) WithRtype(rtype Rtype) *FileUploader {
+	f.rtype = rtype
 	return f
 }
 
@@ -68,13 +85,13 @@ func (f *FileUploader) baiduPCSPreCreate(checksums FileChecksums) (string, strin
 	formData.Add("size", strconv.FormatInt(checksums.totalSize, 10))
 	formData.Add("block_list", fmt.Sprintf(`["%s"]`, strings.Join(checksums.checksums, `","`)))
 	formData.Add("isdir", "0")
-	formData.Add("rtype", "3")
+	formData.Add("rtype", fmt.Sprint(f.rtype))
 	formData.Add("autoinit", "1")
 	formData.Add("local_ctime", strconv.FormatInt(fileInfo.ModTime().Unix(), 10))
 	formData.Add("local_mtime", strconv.FormatInt(fileInfo.ModTime().Unix(), 10))
 	if len(checksums.checksums) > 1 {
 		formData.Add("content-md5", checksums.contentMd5)
-		formData.Add("slice-md5", checksums.sliceMd5)
+		//formData.Add("slice-md5", checksums.sliceMd5)
 	}
 
 	data := formData.Encode()
@@ -236,7 +253,7 @@ func (f *FileUploader) baiduPCSCreate(uploadId string, checksums FileChecksums) 
 	formData.Add("isdir", "0")
 	formData.Add("uploadid", uploadId)
 	formData.Add("mode", "1")
-	formData.Add("rtype", "3")
+	formData.Add("rtype", fmt.Sprint(f.rtype))
 	formData.Add("block_list", fmt.Sprintf(`["%s"]`, strings.Join(checksums.checksums, `","`)))
 	data := formData.Encode()
 

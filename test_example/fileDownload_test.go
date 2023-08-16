@@ -11,7 +11,7 @@ func TestFileDownload(t *testing.T) {
 
 	// 获取文件Dlink
 	fi := BaiduPanApi.NewFileInfo().
-		WithAccessToken("123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA").
+		WithAccessToken("123.12461983a243d0f7fb2815c4f34ffbb4.Y7lcNmaszewLAm5ztiMp3viArcu7IGLnlbXm2Sp.9ahPbg").
 		WithFSIds([]int64{166071588707972})
 
 	myResponse, err := fi.SendRequest()
@@ -24,12 +24,13 @@ func TestFileDownload(t *testing.T) {
 	root := "/app_ykc_test"
 	downloadPath := "../test"
 	for _, response := range myResponse.List {
+		// 计算相对路径
 		rePath, err := filepath.Rel(root, response.Path)
 		if err != nil {
 			panic(err)
 		}
 		targetPath := filepath.Join(downloadPath, rePath)
-		err = BaiduPanApi.NewFileDownloader().WithAccessKey("123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA").
+		err = BaiduPanApi.NewFileDownloader().WithAccessKey("123.12461983a243d0f7fb2815c4f34ffbb4.Y7lcNmaszewLAm5ztiMp3viArcu7IGLnlbXm2Sp.9ahPbg").
 			WithDlink(response.DLink).
 			WithDownloadPath(targetPath).Download()
 		if err != nil {

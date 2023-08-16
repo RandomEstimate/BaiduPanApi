@@ -35,7 +35,7 @@ func (f *FileDirDownloader) Download() {
 	// 获取文件夹下文件的所有fsid
 	api := NewFileList().
 		WithDir(f.fileDirPath).
-		WithAccessToken("123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA")
+		WithAccessToken(f.accessKey)
 
 	response, err := api.GetAllList()
 	if err != nil {
@@ -51,11 +51,10 @@ func (f *FileDirDownloader) Download() {
 				fsIdList = append(fsIdList, list.FSID)
 			}
 		}
-
 	}
 
 	fi := NewFileInfo().
-		WithAccessToken("123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA").
+		WithAccessToken(f.accessKey).
 		WithFSIds(fsIdList)
 
 	response2, err := fi.SendRequest()
@@ -72,7 +71,7 @@ func (f *FileDirDownloader) Download() {
 				panic(err)
 			}
 			targetPath := filepath.Join(f.downloadFileDirPath, rePath)
-			err = NewFileDownloader().WithAccessKey("123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA").
+			err = NewFileDownloader().WithAccessKey(f.accessKey).
 				WithDlink(response.DLink).
 				WithDownloadPath(targetPath).Download()
 			if err != nil {

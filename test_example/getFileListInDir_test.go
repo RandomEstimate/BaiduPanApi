@@ -13,8 +13,9 @@ func TestGetFileListInDir(t *testing.T) {
 
 	resp, err := obj.Do(&BaiduPanApi.ListRequest{
 		Method:      "list",
-		AccessToken: "123.e7ea833a49011676bd8b2e28364e24b7.YHBhB2uZtaH5iUmzOxMf7TrpbojbPl_4RiLOAXw.PiApnA",
-		Dir:         "/BinanceTradeData/ETC",
+		AccessToken: "123.12461983a243d0f7fb2815c4f34ffbb4.Y7lcNmaszewLAm5ztiMp3viArcu7IGLnlbXm2Sp.9ahPbg",
+		Dir:         "/BinanceTradeData/IMX",
+		Limit:       1000,
 	})
 
 	if err != nil {

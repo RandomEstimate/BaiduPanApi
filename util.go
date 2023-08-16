@@ -54,10 +54,10 @@ func ChecksumFile(filepath string) (FileChecksums, error) {
 
 	// 计算效验文件MD5
 	headMd5, err := calcHead256KbMd5(filepath)
-	if err != nil {
-		fmt.Println("Error calculating head 256KB MD5:", err)
-		return FileChecksums{}, err
-	}
+	//if err != nil {
+	//	fmt.Println("Error calculating head 256KB MD5:", err)
+	//	return FileChecksums{}, err
+	//}
 
 	var checksums []string
 	numChunks := (fileInfo.Size() + chunkSize - 1) / chunkSize
