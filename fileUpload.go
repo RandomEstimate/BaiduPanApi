@@ -300,29 +300,34 @@ func (f *FileUploader) Upload() error {
 		}
 
 		if err = VerifyFileExists(f.filePath); err != nil {
+			log.Printf("Upload verifyFile error : %v", err)
 			continue
 		}
 
 		checksumFile, err := ChecksumFile(f.filePath)
 		if err != nil {
+			log.Printf("Upload ChecksumFile error : %v", err)
 			continue
 		}
 
 		// 文件预上传
 		_, uploadId, _, err := f.baiduPCSPreCreate(checksumFile)
 		if err != nil {
+			log.Printf("Upload baiduPCSPreCreate error : %v", err)
 			continue
 		}
 
 		// 文件单一分片上传
 		err = f.baiduPCSSuperFile2(uploadId, checksumFile)
 		if err != nil {
+			log.Printf("Upload baiduPCSSuperFile2 error : %v", err)
 			continue
 		}
 
 		// 文件完成生成
 		err = f.baiduPCSCreate(uploadId, checksumFile)
 		if err != nil {
+			log.Printf("Upload baiduPCSCreate error : %v", err)
 			continue
 		}
 
