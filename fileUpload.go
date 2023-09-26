@@ -26,6 +26,7 @@ type FileUploader struct {
 	filePath       string
 	uploadFilePath string
 	rtype          Rtype
+	client         *http.Client
 }
 
 type Rtype int
@@ -40,7 +41,9 @@ const Rtype2 Rtype = 2
 const Rtype3 Rtype = 3
 
 func NewFileUploader() *FileUploader {
-	return &FileUploader{}
+	return &FileUploader{
+		client: &http.Client{},
+	}
 }
 
 func (f *FileUploader) WithAccessKey(accessKey string) *FileUploader {
@@ -101,9 +104,9 @@ func (f *FileUploader) baiduPCSPreCreate(checksums FileChecksums) (string, strin
 		return "", "", "", fmt.Errorf("failed to create precreate request: %w", err)
 	}
 
-	client := &http.Client{}
+	//client := &http.Client{}
 
-	resp, err := client.Do(createReq)
+	resp, err := f.client.Do(createReq)
 	if err != nil {
 		return "", "", "", fmt.Errorf("failed to do precreate request: %w", err)
 	}
@@ -204,9 +207,9 @@ func (f *FileUploader) baiduPCSSuperFile2(uploadID string, checksums FileChecksu
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("Content-Length", strconv.Itoa(body.Len()))
 
-		client := &http.Client{}
+		//client := &http.Client{}
 
-		resp, err := client.Do(req)
+		resp, err := f.client.Do(req)
 		if err != nil {
 			return err
 		}
@@ -262,9 +265,9 @@ func (f *FileUploader) baiduPCSCreate(uploadId string, checksums FileChecksums) 
 		return fmt.Errorf("failed to create create request: %w", err)
 	}
 
-	client := &http.Client{}
+	//client := &http.Client{}
 
-	resp, err := client.Do(createReq)
+	resp, err := f.client.Do(createReq)
 	if err != nil {
 		return fmt.Errorf("failed to do create request: %w", err)
 	}
@@ -296,7 +299,7 @@ func (f *FileUploader) Upload() error {
 
 	for retries := 0; retries <= maxRetries; retries++ {
 		if retries > 0 {
-			time.Sleep(5 * time.Second) // 等待 5 秒钟再尝试
+			time.Sleep(3 * time.Second) // 等待 5 秒钟再尝试
 		}
 
 		if err = VerifyFileExists(f.filePath); err != nil {
@@ -324,18 +327,12 @@ func (f *FileUploader) Upload() error {
 			continue
 		}
 
-		for retries2 := 0; retries2 <= maxRetries; retries2++ {
-			time.Sleep(time.Second)
-			// 文件完成生成
-			err = f.baiduPCSCreate(uploadId, checksumFile)
-			if err != nil {
-				log.Printf("Upload baiduPCSCreate error : %v", err)
-				continue
-			}
-		}
-
+		//time.Sleep(time.Second * 5)
+		// 文件完成生成
+		err = f.baiduPCSCreate(uploadId, checksumFile)
 		if err != nil {
-			return err
+			log.Printf("Upload baiduPCSCreate error : %v", err)
+			continue
 		}
 
 		return nil // 成功上传，直接返回
