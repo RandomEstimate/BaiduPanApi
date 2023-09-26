@@ -324,11 +324,18 @@ func (f *FileUploader) Upload() error {
 			continue
 		}
 
-		// 文件完成生成
-		err = f.baiduPCSCreate(uploadId, checksumFile)
+		for retries2 := 0; retries2 <= maxRetries; retries2++ {
+			time.Sleep(time.Second)
+			// 文件完成生成
+			err = f.baiduPCSCreate(uploadId, checksumFile)
+			if err != nil {
+				log.Printf("Upload baiduPCSCreate error : %v", err)
+				continue
+			}
+		}
+
 		if err != nil {
-			log.Printf("Upload baiduPCSCreate error : %v", err)
-			continue
+			return err
 		}
 
 		return nil // 成功上传，直接返回
